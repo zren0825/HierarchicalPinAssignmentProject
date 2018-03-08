@@ -1,0 +1,61 @@
+Def:
+//Macro
+Name Type UpperLeft_X UpperLeft_Y LowerRight_X LowerRight_Y 
+T Name Type(instTerm-1/term-0) GetNet X Y    
+//Net
+Name 
+T Name Type(instTerm/term) GetNet X Y
+*****
+Macro
+1 A 10 80 30 60 
+T 1a 1 N1 0 -10 
+T 1b 0 NONE 0 10 
+T 1c 1 N2 10 0
+end
+Macro
+2 B 45 80 95 40
+T 2a 1 N2 -25 -17
+T 2b 1 N3 -6 -20
+T 2c 1 N5 25 0 
+T 2d 0 NONE -25 18
+end
+Macro
+3 C 20 40 40 10 
+T 3a 1 N1 -10 5 
+T 3b 0 NONE -7 15
+T 3c 1 N2 5 15
+T 3d 1 N3 10 0
+T 3e 1 N4 3 -15
+end
+Macro
+4 A 50 30 70 10  
+T 4a 1 N4 0 -10
+T 4b 0 NONE 0 10
+T 4c 1 N5 10 0 
+end
+Net
+N1
+T 1a 1 N1 20 60
+T 3a 1 N1 20 30
+end
+Net
+N2
+T 1c 1 N2 30 70 
+T 2a 1 N2 45 43 
+T 3c 1 N2 35 40 
+end
+Net
+N3
+T 2b 1 N3 64 40
+T 3d 1 N3 40 25
+end
+Net
+N4
+T 3e 1 N4 33 10 
+T 4a 1 N4 60 10
+end
+Net
+N5
+T 2c 1 N5 95 60 
+T 4c 1 N5 70 20
+end

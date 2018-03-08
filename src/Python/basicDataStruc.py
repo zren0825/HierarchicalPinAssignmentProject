@@ -20,43 +20,45 @@ class Macro:
 		self.perimeter = 0 
 		self.rotated   = False
 		def update_perimeter(self):
-			self.perimeter = 2 * (abs(self.box.upperLeft - self.box.upperRight)
-								+ abs(self.box.upperLeft - self.box.lowerRight)) 
+			self.perimeter = 2 * (abs(self.box.upperLeft.x - self.box.lowerRight.x)
+								+ abs(self.box.upperLeft.y - self.box.lowerRight.y)) 
 		def rotate(self):
 			self.rotated = True
 			#TODO: rotate
 		def addPinCopy(self):
 			self.maxPinCopy += 1
-			#TODO: rotate
+			#TODO: addPin
 		def removeCopy(self):
-			self.maxPinCopy 
+			self.maxPinCopy -= 1
+			#TODO:removePin
 class Net:
 	def __init__(self, name=''):
 		self.name = name
 		self.terms = []
-		self.wireLength = 0
-
-class Pin:
-	def __init__(self, location = Location()):
-		self.name = name
-		self.location = location
-		self.numCopies = 0
-		self.edge = ''
-
-class Box:
-	def __init__(self, upperLeft = 0, upperRight = 0, lowerLeft = 0, lowerRight = 0):
-		self.upperLeft  = Location()
-		self.upperRight = Location()
-		self.lowerLeft  = Location()
-		self.lowerRight = Location()
+		#self.wireLength = 0
 
 class Location:
 	def __init__(self, x = 0, y = 0):
 		self.x = x
 		self.y = y
 
+class Term:
+	def __init__(self, name = '', _type = '', location = Location()):
+		self.name = name
+		self.type = _type
+		self.location = location
+		self.numCopies = 0
+		self.edge = ''
+
+class Box:
+	def __init__(self, upperLeft = Location(), lowerRight = Location()):
+		self.upperLeft  = Location()
+		#self.upperRight = Location()
+		#self.lowerLeft  = Location()
+		self.lowerRight = Location()
+
 class PerformanceMetrics:
-	def __init__(self, name = '', Wmax = 0, Wmn = 0, p = 0, m = 0)
+	def __init__(self, name = '', Wmax = 0, Wmn = 0, p = 0, m = 0):
 		self.name = name
 		self.Wmax = Wmax
 		self.Wmn  = Wmn
