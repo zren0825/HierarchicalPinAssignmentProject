@@ -1,0 +1,16 @@
+; resource latency number area
+alu 1 1 10
+mpy11 1 1 20
+mpy12 1 1 20
+mpy21 1 1 20
+mpy22 1 1 20
+mpy23 1 1 20
+
+; resource : list of opeartions can be executed by the resource
+alu : x3 x4 x5sum x5 out2
+mpy11 : x31b x32b x41b out1b 
+mpy12 : x31 x32 x41 out1
+mpy21 : x51b1 x52b1 out22b1 
+mpy22 : x51b2 x52b2 out22b2 
+mpy23 : x51 x52 out22 
+

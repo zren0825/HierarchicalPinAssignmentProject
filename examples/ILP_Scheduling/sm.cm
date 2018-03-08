@@ -1,0 +1,18 @@
+; resource latency number area
+alu 1 1 10
+
+mpy1 1 1 20
+mpip1 1 1 20
+
+mpy2 1 1 20
+mpip20 1 1 20
+mpip21 1 1 20
+
+; resource : list of opeartions can be executed by the resource
+alu : x3 x4 x5a x5 o2
+mpy1 : x11p x22p x33p o1p 
+mpip1 : x11 x22 x33 o1
+mpy2 : x14p x35p x16p 
+mpip20 : x14pp x35pp x16pp 
+mpip21 : x14 x35 x16 
+
