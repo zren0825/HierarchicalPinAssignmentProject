@@ -1,0 +1,45 @@
+class macro:
+//fields
+name
+type
+list termPositions(number, location)
+list pinLocations(number, location)
+maxPinCopy
+
+//methods
+rotate()
+addPinCopy()
+
+
+class net:
+name
+length
+..
+
+class location:
+x
+y
+
+
+constraint:
+//block positions
+//same type has same pin assignment
+//DRC, LVS
+min pitch constraint
+max perturbation constraint
+at most two copies
+
+
+
+optimization function:
+grading metrics
+-max/critical wl
+-mean wl
+-pertubation
+-#pins
+-runtime
+
+
+
+Helper functions:
+#define: 
