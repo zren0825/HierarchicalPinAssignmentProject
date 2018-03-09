@@ -2,8 +2,6 @@
 # in the pin assignment task which are expected to be used
 # as basic data structures in the CPLEX solver
 # Last modified: 03/07/2018 2PM 
-import docplex.cp.model as mdl
-
 class Block:
 	def __init__(self, name=''):
 		self.name   = name
@@ -21,23 +19,23 @@ class Macro:
 		self.perimeter = 0 
 		self.center = Location()
 		self.rotated   = False
-		def update_macro(self):
-			# Updata Perimeter
-			self.perimeter = 2 * (abs(self.box.upperLeft.x - self.box.lowerRight.x)
-								+ abs(self.box.upperLeft.y - self.box.lowerRight.y)) 
-			# Update Center
-			self.center.x = abs(self.box.upperLeft.x - self.box.lowerRight.x)/2
-			self.center.y = abs(self.box.upperLeft.y - self.box.lowerRight.y)/2 
+	def update_macro(self):
+		# Updata Perimeter
+		self.perimeter = 2 * (abs(self.box.upperLeft.x - self.box.lowerRight.x)
+							+ abs(self.box.upperLeft.y - self.box.lowerRight.y)) 
+		# Update Center
+		self.center.x = abs(self.box.upperLeft.x - self.box.lowerRight.x)/2
+		self.center.y = abs(self.box.upperLeft.y - self.box.lowerRight.y)/2 
 
-		def rotate(self):
-			self.rotated = True
-			#TODO: rotate
-		def addPinCopy(self):
-			self.maxPinCopy += 1
-			#TODO: addPin
-		def removeCopy(self):
-			self.maxPinCopy -= 1
-			#TODO:removePin
+	def rotate(self):
+		self.rotated = True
+		#TODO: rotate
+	def addPinCopy(self):
+		self.maxPinCopy += 1
+		#TODO: addPin
+	def removeCopy(self):
+		self.maxPinCopy -= 1
+		#TODO:removePin
 class Net:
 	def __init__(self, name=''):
 		self.name = name
@@ -49,49 +47,45 @@ class Location:
 		self.x = x
 		self.y = y
 
-class Location:
-	def __init__(self, x = 0, y = 0):
-		self.x = x
-		self.y = y
+class Box:
+	def __init__(self, upperLeft = Location(), lowerRight = Location()):
+		self.upperLeft  = upperLeft
+		#self.upperRight = Location()
+		#self.lowerLeft  = Location()
+		self.lowerRight = lowerRight
 
 class Term:
-	def __init__(self, name = '', _type = '', location = Location()):
+	def __init__(self, name = '', _type = '', netName = '', location = Location()):
 		self.name = name
 		self.type = _type
 		self.location = location
 		self.macro_location = Location()
 		self.macro = Macro()
-		self.net = Net()
+		self.net = Net(netName)
 		self.numCopies = 0
 		self.edge = ''
 		# wrapped  fields
 		self.cpo_macro_location = Location()
 		self.cpo_location = Location()
-		def update_term(self):
-			# Update macro-reference location
-			self.macro_location.x = self.location.x - self.macro.center.x
-			self.macro_location.y = self.location.y - self.macro.center.y
-			# Update edge
-			macro_width  = abs(self.macro.box.upperLeft.x - self.macro.box.lowerRight.x)
-			macro_height = abs(self.macro.box.upperLeft.y - self.macro.box.lowerRight.y)
-			if(self.macro_location.x == macro_width/2):
-				self.edge = 'right'
-			else if(self.macro_location.x == -macro_width/2):
-				self.edge = 'left'
-			else if (self.macro_location.y == macro_height/2):
-				self.edge = 'top'
-			else:
-				self.edge = 'bottom'
+	def update_term(self):
+		# Update macro-reference location
+		self.macro_location.x = self.location.x - self.macro.center.x
+		self.macro_location.y = self.location.y - self.macro.center.y
+		# Update edge
+		macro_width  = abs(self.macro.box.upperLeft.x - self.macro.box.lowerRight.x)
+		macro_height = abs(self.macro.box.upperLeft.y - self.macro.box.lowerRight.y)
+		if(self.macro_location.x == macro_width/2):
+			self.edge = 'right'
+		elif(self.macro_location.x == -macro_width/2):
+			self.edge = 'left'
+		elif (self.macro_location.y == macro_height/2):
+			self.edge = 'top'
+		else:
+			self.edge = 'bottom'
 		# used in helpers.moveTerm()
-		def update_location(self):
-			self.location = Location(self.macro.center.x + self.macro_location.x, 
-									 self.macro.center.y + self.macro_location.y)
-
-	def __init__(self, upperLeft = Location(), lowerRight = Location()):
-		self.upperLeft  = Location()
-		#self.upperRight = Location()
-		#self.lowerLeft  = Location()
-		self.lowerRight = Location()
+	def update_location(self):
+		self.location = Location(self.macro.center.x + self.macro_location.x, 
+								 self.macro.center.y + self.macro_location.y)
 
 class PerformanceMetrics:
 	def __init__(self, name = '', Wmax = 0, Wmn = 0, p = 0, m = 0):

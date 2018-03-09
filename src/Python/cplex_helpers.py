@@ -3,9 +3,21 @@
 # as cplex helper functions in the CPLEX solver
 # Last modified: 03/07/2018 3PM 
 
-import docplex.cp.model as mdl
 import helpers
-def moveTermUpdate(term, step, moveDistance, pointList_x, pointList_y): # default move clockwise
+
+# --------------------------------
+#  Solver Constraint Helpers
+# --------------------------------
+
+def t2tDistance(mdl, term1, term2):
+	return mdl.abs(term1.cpo_macro_location.x - term2.cpo_macro_location.x) + mdl.abs(term1.cpo_macro_location.y - term2.cpo_macro_location.y)
+
+
+# --------------------------------
+#  Solver Optimizer Helpers
+# --------------------------------
+
+def moveTermUpdate(mdl, term, step, moveDistance, pointList_x, pointList_y): # default move clockwise
 	index = findCloestPoint(term, pointList_x, pointList_y)
 	new_index = mdl.constant(index) + moveDistance/mdl.constant(step)
 	# Update Cpo Location
@@ -14,7 +26,7 @@ def moveTermUpdate(term, step, moveDistance, pointList_x, pointList_y): # defaul
 	term.cpo_location.x = term.cpo_macro_location.x + mdl.constant(term.macron.center.x)
 	term.cpo_location.y = term.cpo_macro_location.y + mdl.constant(term.macron.center.y)
 
-def net_HPWL(net):
+def net_HPWL(mdl, net):
 	terms_x = []
 	terms_y = []
 	for term in net.terms:

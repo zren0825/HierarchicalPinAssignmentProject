@@ -10,7 +10,9 @@ def parseMacroBasciInfo(macro_basic_info_line):
 	macro_info_chunks = macro_basic_info_line.split()
 	macro = ds.Macro(name = macro_info_chunks[0])
 	macro.type = macro_info_chunks[1]
-	macro.box = ds.Box(ds.Location(macro_info_chunks[2],macro_info_chunks[3]),ds.Location(macro_info_chunks[4],macro_info_chunks[5]))
+	UL = ds.Location(int(macro_info_chunks[4]), int(macro_info_chunks[3]))
+	LR = ds.Location(int(macro_info_chunks[2]), int(macro_info_chunks[5]))
+	macro.box = ds.Box(UL,LR)
 	return macro
 
 def parseNetBasciInfo(net_basic_info_line):
@@ -20,7 +22,7 @@ def parseNetBasciInfo(net_basic_info_line):
 
 def parseTerm(term_line):
 	term_info_chunks = term_line.split()
-	term = ds.Term(term_info_chunks[1], term_info_chunks[2], ds.Location(term_info_chunks[3], term_info_chunks[4]))
+	term = ds.Term(term_info_chunks[1], term_info_chunks[2],term_info_chunks[3], ds.Location(int(term_info_chunks[4]), int(term_info_chunks[5])))
 	term.update_term()
 	return term
 
@@ -33,6 +35,7 @@ def readMacroNetFile(input_file):
 	while line:
 		if line == 'Macro\n':
 			macro_basic_info = f.readline()
+			#print(int(macro_basic_info.split()[4]))
 			macro = parseMacroBasciInfo(macro_basic_info)
 			line = f.readline()
 			while line.split()[0] == 'T':
@@ -55,12 +58,21 @@ def readMacroNetFile(input_file):
 		line = f.readline()
 	f.close()
 	return macros, nets
-
+"""
 #Testing readMacroNetFile()
-#[macros, nets] = readMacroNetFile('simple_test_v0.txt')
-#print(macros)
-#print(nets)
-
+filename = 'cplex_for_python.txt'
+[macros, nets] = readMacroNetFile(filename)
+print(macros[0].name)
+print(macros[0].type)
+print(macros[0].box.upperLeft.x)
+print(macros[0].box.upperLeft.y)
+print(macros[0].box.lowerRight.x)
+print(macros[0].box.lowerRight.y)
+print(macros[0].terms[0].name)
+print(macros[0].terms[0].type)
+print(macros[0].terms[0].location.x)
+print(macros[0].terms[0].location.y)
+"""
 def readConstraintFile(input_file):
 	return 0
 def dumpOutputFile(output_file):

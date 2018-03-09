@@ -3,7 +3,7 @@
 # as helper functions in the CPLEX solver
 # Last modified: 03/07/2018 3PM 
 
-import basicDataStructure as ds
+import basicDataStruc as ds
 
 # ------------------------
 #  Design Related Helpers
@@ -73,22 +73,24 @@ def createMacroPointList(unique_macros, step):
 	for macro in unique_macros:
 		pointList_x = []
 		pointList_y = []
-		width = abs(macro.box.upperLeft.x - macro.box.lowerRight.x)/2
-		height = abs(macro.box.upperLeft.y - macro.box.lowerRight.y)/2
+		width = int(abs(macro.box.upperLeft.x - macro.box.lowerRight.x)/2)
+		height = int(abs(macro.box.upperLeft.y - macro.box.lowerRight.y)/2)
+
 		# Left
-		for h in range(-height, step, height):
+		for h in [x * step for x in range(-height, height)]:
 			pointList_x.append(-width)
 			pointList_y.append(h)
 		# Top
-		for w in range(-width, step, width):
+		for w in [x * step for x in range(-width, width)]:
 			pointList_x.append(w)
 			pointList_y.append(height)
 		# Right
-		for h in range(height, -step, -height):
+
+		for h in [x * -step for x in range(height, -height)]:
 			pointList_x.append(width)
 			pointList_y.append(h)
 		# Bottom
-		for w in range(width, -step, -width):
+		for w in [x * -step for x in range(width, -width)]:
 			pointList_x.append(w)
 			pointList_y.append(-height)
 		pointLists_x.append(pointList_x)
@@ -99,11 +101,9 @@ def findCloestPoint(term, pointList_x, pointList_y):
 	index = 1
 	res = ()
 	min_index = 0
-	min_dist = abs(term.macro_location.x - pointList_x[0]) + 
-			   abs(term.macro_location.y - pointList_y[0])
+	min_dist = abs(term.macro_location.x - pointList_x[0]) + abs(term.macro_location.y - pointList_y[0])
 	for point_x, point_y in pointList_x, pointList_y:
-		distance = abs(term.macro_location.x - point_x) + 
-		           abs(term.macro_location.y - point_y)
+		distance = abs(term.macro_location.x - point_x) + abs(term.macro_location.y - point_y)
 		if distance < min_dist:
 			min_dist = distance 
 			min_index = index
@@ -111,17 +111,6 @@ def findCloestPoint(term, pointList_x, pointList_y):
 		index = index + 1
 	return min_index
 
-
-# --------------------------------
-#  Solver Constraint Helpers
-# --------------------------------
-
-def t2t_distance(term1, term2):
-	return abs(term1.macor_location.x - term2.macor_location.x) + abs(term1.macor_location.y - term2.macor_location.y)
-
-# --------------------------------
-#  Solver Optimizer Helpers
-# --------------------------------
 
 def moveTerm(term, moveDistance): # default move clockwise
 	def updateTop(term, width, height, moveDistance):
@@ -155,17 +144,17 @@ def moveTerm(term, moveDistance): # default move clockwise
 			# On next edge
 			moveDistance -= distance
 			if moveDistance < height:
-				updateRight(term, width, height, moveDistance):
+				updateRight(term, width, height, moveDistance)
 			else:
 				# On opposite edge
 				moveDistance -= height
 				if moveDistance < width:
-					updateBottom(term, width, height, moveDistance):
+					updateBottom(term, width, height, moveDistance)
 				else:
 					# On last edge
 					moveDistance -= width
 					updateLeft(term, width, height, moveDistance)
-	else if term.edge == 'bottom':
+	elif term.edge == 'bottom':
 		distance = width/2 + term.macro_location.x if term.macro_location.x >= 0 else  width/2 - abs(term.macro_location.x)
 		# On the same edge
 		if moveDistance < distance:
@@ -184,7 +173,7 @@ def moveTerm(term, moveDistance): # default move clockwise
 					# On last edge
 					moveDistance -= width
 					updateRight(term, width, height, moveDistance)
-	else if term.edge == 'right':
+	elif term.edge == 'right':
 		distance = term.macro_location.y + height/2 if term.macro_location.y >= 0 else  height/2 - abs(term.macro_location.y)
 		# On the same edge
 		if moveDistance < distance:
