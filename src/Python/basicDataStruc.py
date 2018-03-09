@@ -18,10 +18,19 @@ class Macro:
 		self.maxPinCopy = 0
 		self.box   = Box()
 		self.perimeter = 0 
+		self.center = Location()
 		self.rotated   = False
-		def update_perimeter(self):
+		def update_macro(self):
 			self.perimeter = 2 * (abs(self.box.upperLeft.x - self.box.lowerRight.x)
 								+ abs(self.box.upperLeft.y - self.box.lowerRight.y)) 
+			self.center.x = abs(self.box.upperLeft.x - self.box.lowerRight.x)/2
+			self.center.y = abs(self.box.upperLeft.y - self.box.lowerRight.y)/2 
+
+		def moveTerm(self):
+			
+
+
+
 		def rotate(self):
 			self.rotated = True
 			#TODO: rotate
@@ -47,8 +56,13 @@ class Term:
 		self.name = name
 		self.type = _type
 		self.location = location
+		self.macro_location = Location()
+		self.macro = Macro()
 		self.numCopies = 0
 		self.edge = ''
+		def update_term(self):
+			self.macro_location.x = self.location.x - self.macro.center.x
+			self.macro_location.y = self.location.y - self.macro.center.y
 
 class Box:
 	def __init__(self, upperLeft = Location(), lowerRight = Location()):

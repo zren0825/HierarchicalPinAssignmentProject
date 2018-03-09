@@ -5,6 +5,9 @@
 
 import basicDataStructure as ds
 
+# ------------------------
+#  Design Related Helpers
+# ------------------------
 def net_HPWL(net):
 	x_max = net.terms[0].location.x
 	x_min = net.terms[0].location.x
@@ -35,6 +38,10 @@ def find_P(pins, macros):
 def find_M(pins, original_pins):
 	return 1 - (len(pins)-len(original_pins))/(len(original_pins))
 
+# --------------------------------
+#  Solver Data Processing Helpers
+# --------------------------------
+
 def findUniqueMacros(macros):
 	macro_types = set()
 	unique_macros = []
@@ -42,7 +49,7 @@ def findUniqueMacros(macros):
 		if macro.type not in macro_types:
 			macro_types.add(macro.type)
 			unique_macros.append(macro)
-	return unique_macros
+	return unique_macros, macro_types
 
 def processMacroTermLocation(unique_macros):
 	for macro in unique_macros:
@@ -52,3 +59,19 @@ def processMacroTermLocation(unique_macros):
 			term.location.x -= center.x 
 			term.location.y -= center.y
 	return unique_macros
+
+# --------------------------------
+#  Solver Constraint Helpers
+# --------------------------------
+
+def t2t_distance(term1, term2):
+	return abs(term1.macor_location.x - term2.macor_location.x) + abs(term1.macor_location.y - term2.macor_location.y)
+
+# --------------------------------
+#  Solver Optimizer Helpers
+# --------------------------------
+
+
+
+
+

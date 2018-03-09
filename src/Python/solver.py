@@ -28,7 +28,7 @@ nets = []
 #constraint = utils.readConstraintFile(constraintFile)
 
 # Group macros by type
-unique_macros = helpers.findUniqueMacros(macros)
+[macro_types, unique_macros] = helpers.findUniqueMacros(macros)
 # Process macro term location to macro-reference-location
 unique_macros = helpers.processMacroTermLocation(unique_macros)
 
@@ -48,7 +48,9 @@ for macro in unique_macros:
 
 # Add Constraints
 
-# Add objective
+# Add Objective
+
+
 
 
 # --------------------

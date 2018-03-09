@@ -21,6 +21,7 @@ def parseNetBasciInfo(net_basic_info_line):
 def parseTerm(term_line):
 	term_info_chunks = term_line.split()
 	term = ds.Term(term_info_chunks[1], term_info_chunks[2], ds.Location(term_info_chunks[3], term_info_chunks[4]))
+	term.update_term()
 	return term
 
 def readMacroNetFile(input_file):
@@ -38,7 +39,7 @@ def readMacroNetFile(input_file):
 				term = parseTerm(line)
 				macro.terms.append(term)
 				line = f.readline()
-			macro.update_perimeter()
+			macro.update_macro()
 			macros.append(macro)
 
 		if line == 'Net\n':
