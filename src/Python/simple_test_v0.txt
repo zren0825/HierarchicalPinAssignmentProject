@@ -8,7 +8,7 @@ T Name Type(instTerm/term) GetNet X Y
 *****
 Macro
 1 A 10 80 30 60 
-T 1a 1 N1 20 60
+T 1a 1 N1 20 60 
 T 1b 0 NONE 20 80 
 T 1c 1 N2 30 70 
 end

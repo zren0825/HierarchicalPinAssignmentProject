@@ -12,10 +12,19 @@ import helpers
 # --------------------
 #  Define Parameters
 # --------------------
-
+"""
+pinLayer	6
+minRoutingLayer	7
+maxRoutingLayer	9
+pinMovement	0.28
+minPinPitch	1.4
+maxPerturbation	-1
+"""
 macroNetFile = 'simple_test_v0.txt'
 #constraintFile = ''
-min_pitch = 2
+pinMovement = 0.28
+minPinPitch = 1.4
+maxPerturbation = -1
 
 # --------------------
 #  Preparing Data
