@@ -20,10 +20,11 @@ def parseNetBasciInfo(net_basic_info_line):
 	net = ds.Net(name = net_info_chunks[0])
 	return net
 
-def parseTerm(term_line):
+def parseTerm(term_line, macro):
 	term_info_chunks = term_line.split()
 	term = ds.Term(term_info_chunks[1], term_info_chunks[2],term_info_chunks[3], ds.Location(int(term_info_chunks[4]), int(term_info_chunks[5])))
-	term.update_term()
+	term.macro = macro
+	
 	return term
 
 def readMacroNetFile(input_file):
@@ -31,26 +32,28 @@ def readMacroNetFile(input_file):
 	nets = []
 	f = open(input_file)
 	line = f.readline()
-	#print(line.split(' '))
 	while line:
 		if line == 'Macro\n':
 			macro_basic_info = f.readline()
 			#print(int(macro_basic_info.split()[4]))
 			macro = parseMacroBasciInfo(macro_basic_info)
+
 			line = f.readline()
 			while line.split()[0] == 'T':
-				term = parseTerm(line)
+				term = parseTerm(line, macro)
+				#term.update_term()
 				macro.terms.append(term)
 				line = f.readline()
-			macro.update_macro()
+			
+			macro.update_macro()	
 			macros.append(macro)
-
+			 
 		if line == 'Net\n':
 			net_basic_info = f.readline()
 			net = parseNetBasciInfo(net_basic_info)
 			line = f.readline()
 			while line.split()[0] == 'T':
-				term = parseTerm(line)
+				term = parseTerm(line, macro)
 				net.terms.append(term)
 				line = f.readline()
 			nets.append(net)

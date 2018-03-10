@@ -60,54 +60,78 @@ def findUniqueMacros(macros):
 
 def processMacroTermLocation(unique_macros):
 	for macro in unique_macros:
-		center = ds.Location(abs(macro.box.upperLeft.x - macro.box.lowerRight.x)/2, 
-							 abs(macro.box.upperLeft.y - macro.box.lowerRight.y)/2)
 		for term in macro.terms:
-			term.location.x -= center.x 
-			term.location.y -= center.y
+			term.location.x -= term.macro.center.x 
+			term.location.y -= term.macro.center.y
 	return unique_macros
 
+# TODO: OFFSET of pin size
 def createMacroPointList(unique_macros, step):
-	pointLists_x = []
+	#count = 0
+	pointLists_x = [] 
 	pointLists_y = []
 	for macro in unique_macros:
-		pointList_x = []
-		pointList_y = []
-		width = int(abs(macro.box.upperLeft.x - macro.box.lowerRight.x)/2)
-		height = int(abs(macro.box.upperLeft.y - macro.box.lowerRight.y)/2)
+		for term in macro.terms:
+			# WH
+			half_width = int(abs(macro.box.upperLeft.x - macro.box.lowerRight.x)//2)
+			half_height = int(abs(macro.box.upperLeft.y - macro.box.lowerRight.y)//2)
+			
+			pointList_x = []
+			pointList_y = []
+			# pin size offset
+			size_offset = min( (abs(half_width - abs(term.macro_location.x)) , abs(half_height - abs(term.macro_location.y))))		
+			# new_WH		
+			new_half_width = half_width - size_offset
+			new_half_height = half_height - size_offset
+			# list start witt lowerLeft
+			# Left
+			for h in list(range(-new_half_height, new_half_height, step)):
+				pointList_x.append(-new_half_width)
+				pointList_y.append(h)
+			# Top
+			for w in list(range(-new_half_width, new_half_width, step)):
+				pointList_x.append(w)
+				pointList_y.append(new_half_height)
+			# Right
 
-		# Left
-		for h in [x * step for x in range(-height, height)]:
-			pointList_x.append(-width)
-			pointList_y.append(h)
-		# Top
-		for w in [x * step for x in range(-width, width)]:
-			pointList_x.append(w)
-			pointList_y.append(height)
-		# Right
+			for h in list(range(new_half_height, -new_half_height, -step)):
+				pointList_x.append(new_half_width)
+				pointList_y.append(h)
+			# Bottom
+			for w in list(range(new_half_width, -new_half_width, -step)):
+				pointList_x.append(w)
+				pointList_y.append(-new_half_height)
+			# match origin
+			index = findCloestPoint(term, pointList_x, pointList_y)
+			"""
+			if(term.macro_location.x == new_half_width):
+				term_edge = 'right'
+			elif(term.macro_location.x == -new_half_width):
+				term_edge = 'left'
+			elif(term.macro_location.y == new_half_height):
+				term_edge = 'top'
+			else:
+				term_edge = 'bottom'
+			skew_offset = pointList_x[index] - term.macro_location.x if pointList_x[index] - term.macro_location.x != 0 else pointList_y[index] - term.macro_location.y
+			"""
+			# list start with default location
+			pointList_x = pointList_x[index:len(pointList_x)] + pointList_x[0:index]
+			pointList_y = pointList_y[index:len(pointList_y)] + pointList_y[0:index]			
+			term.pointList_x = pointList_x
+			term.pointList_y = pointList_y
+			#count = 1
+	
 
-		for h in [x * -step for x in range(height, -height)]:
-			pointList_x.append(width)
-			pointList_y.append(h)
-		# Bottom
-		for w in [x * -step for x in range(width, -width)]:
-			pointList_x.append(w)
-			pointList_y.append(-height)
-		pointLists_x.append(pointList_x)
-		pointLists_y.append(pointList_y)
 
-	return pointLists_x, pointLists_y
 def findCloestPoint(term, pointList_x, pointList_y):
 	index = 1
-	res = ()
 	min_index = 0
 	min_dist = abs(term.macro_location.x - pointList_x[0]) + abs(term.macro_location.y - pointList_y[0])
-	for point_x, point_y in pointList_x, pointList_y:
+	for point_x, point_y in zip(pointList_x, pointList_y):
 		distance = abs(term.macro_location.x - point_x) + abs(term.macro_location.y - point_y)
 		if distance < min_dist:
 			min_dist = distance 
 			min_index = index
-			res = point
 		index = index + 1
 	return min_index
 

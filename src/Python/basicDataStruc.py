@@ -18,14 +18,14 @@ class Macro:
 		self.box   = Box()
 		self.perimeter = 0 
 		self.center = Location()
+		self.cpo_center = 
 		self.rotated   = False
 	def update_macro(self):
 		# Updata Perimeter
-		self.perimeter = 2 * (abs(self.box.upperLeft.x - self.box.lowerRight.x)
-							+ abs(self.box.upperLeft.y - self.box.lowerRight.y)) 
+		self.perimeter = 2 * (self.box.lowerRight.x - self.box.upperLeft.x + self.box.upperLeft.y - self.box.lowerRight.y)
 		# Update Center
-		self.center.x = abs(self.box.upperLeft.x - self.box.lowerRight.x)/2
-		self.center.y = abs(self.box.upperLeft.y - self.box.lowerRight.y)/2 
+		self.center.x = int((self.box.upperLeft.x + self.box.lowerRight.x)/2)
+		self.center.y = int((self.box.upperLeft.y + self.box.lowerRight.y)/2)
 
 	def rotate(self):
 		self.rotated = True
@@ -64,14 +64,17 @@ class Term:
 		self.net = Net(netName)
 		self.numCopies = 0
 		self.edge = ''
+		self.pointList_x = []
+		self.pointList_y = []
 		# wrapped  fields
 		self.cpo_macro_location = Location()
 		self.cpo_location = Location()
+
 	def update_term(self):
 		# Update macro-reference location
-		self.macro_location.x = self.location.x - self.macro.center.x
-		self.macro_location.y = self.location.y - self.macro.center.y
+		self.macro_location = Location(self.location.x - self.macro.center.x,self.location.y - self.macro.center.y)
 		# Update edge
+		"""
 		macro_width  = abs(self.macro.box.upperLeft.x - self.macro.box.lowerRight.x)
 		macro_height = abs(self.macro.box.upperLeft.y - self.macro.box.lowerRight.y)
 		if(self.macro_location.x == macro_width/2):
@@ -82,10 +85,10 @@ class Term:
 			self.edge = 'top'
 		else:
 			self.edge = 'bottom'
+		"""
 		# used in helpers.moveTerm()
 	def update_location(self):
-		self.location = Location(self.macro.center.x + self.macro_location.x, 
-								 self.macro.center.y + self.macro_location.y)
+		self.location = Location(self.macro.center.x + self.macro_location.x,self.macro.center.y + self.macro_location.y)
 
 class PerformanceMetrics:
 	def __init__(self, name = '', Wmax = 0, Wmn = 0, p = 0, m = 0):
