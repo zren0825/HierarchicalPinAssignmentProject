@@ -18,7 +18,7 @@ class Macro:
 		self.box   = Box()
 		self.perimeter = 0 
 		self.center = Location()
-		self.cpo_center = 
+		self.cpo_center = Location()
 		self.rotated   = False
 	def update_macro(self):
 		# Updata Perimeter

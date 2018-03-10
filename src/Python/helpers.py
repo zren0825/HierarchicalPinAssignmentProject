@@ -65,7 +65,6 @@ def processMacroTermLocation(unique_macros):
 			term.location.y -= term.macro.center.y
 	return unique_macros
 
-# TODO: OFFSET of pin size
 def createMacroPointList(unique_macros, step):
 	#count = 0
 	pointLists_x = [] 
@@ -134,8 +133,17 @@ def findCloestPoint(term, pointList_x, pointList_y):
 			min_index = index
 		index = index + 1
 	return min_index
+#############################################################################################################3
+def moveTermUpdate(term, moveDistance): # default move clockwise
+	# Update Cpo Location
+	term.macro_location.x = term.pointList_x[moveDistance]
+	term.macro_location.y = term.pointList_y[moveDistance]
+	term.location.x = term.macro_location.x + term.macro.center.x
+	term.location.y = term.macro_location.y + term.macro.center.y
 
-
+def t2tDistance(term1, term2):
+	return abs(term1.macro_location.x - term2.macro_location.x) + abs(term1.macro_location.y - term2.macro_location.y)
+"""
 def moveTerm(term, moveDistance): # default move clockwise
 	def updateTop(term, width, height, moveDistance):
 		term.macro_location.x = width/2 + moveDistance
@@ -237,3 +245,4 @@ def moveTerm(term, moveDistance): # default move clockwise
 					updateBottom(term, width, height, moveDistance)
 		
 	term.update_location()
+"""

@@ -38,72 +38,24 @@ nets = []
 for macro in macros:
 		for term in macro.terms:
 			term.update_term()
-"""
-print(macros[0].name)
-print(macros[0].type)
-print(macros[0].perimeter)
-print(macros[0].center.x)
-print(macros[0].center.y)
-print('----')
-print(macros[0].terms[0].name)
-print(macros[0].terms[0].type)
-print(macros[0].terms[0].macro.name)
-print(macros[0].terms[0].macro.center.x)
-print(macros[0].terms[0].macro.center.y)
-print(macros[0].terms[0].location.x)
-print(macros[0].terms[0].location.y)
-print(macros[0].terms[0].macro_location.x)
-print(macros[0].terms[0].macro_location.y)
-print(macros[0].terms[0].net.name)
-print(macros[0].terms[0].edge)
-print('----')
-print(nets[0].terms[0].name)
-print(nets[0].terms[0].type)
-print(nets[0].terms[0].location.x)
-print(nets[0].terms[0].location.y)
-print(nets[0].terms[0].macro_location.x)
-print(nets[0].terms[0].macro_location.y)
-print(nets[0].terms[0].net.name)
-print(nets[0].terms[0].edge)
-"""
-
 
 # Group macros by type
 [unique_macros, macro_types] = helpers.findUniqueMacros(macros)
-"""
-print(len(unique_macros))
-print(unique_macros[0].name)
-print(unique_macros[0].perimeter)
-print(unique_macros[0].center.x)
-print(unique_macros[0].center.y)
-print(unique_macros[0].terms[0].name)
-print(unique_macros[0].terms[0].type)
-print(unique_macros[0].terms[0].macro.name)
-print(unique_macros[0].terms[0].macro_location.x)
-print(unique_macros[0].terms[0].macro_location.y)
-"""
+
 # Process macro term location to macro-reference-location
 unique_macros = helpers.processMacroTermLocation(unique_macros)
-"""
-print(unique_macros[0].terms[0].location.x)
-print(unique_macros[0].terms[0].location.y)
-print(unique_macros[0].terms[0].macro_location.x)
-print(unique_macros[0].terms[0].macro_location.y)
-"""
-
 
 # Create macro point lists
 helpers.createMacroPointList(unique_macros, pinMovement)
-"""
-print('-----------------')
-print(unique_macros[0].perimeter//pinMovement)
-print(len(unique_macros[0].terms[0].pointList_x))
 
-print(unique_macros[0].terms[0].pointList_x[0])
-print(unique_macros[0].terms[0].macro_location.x)
+#print(unique_macros[0].terms[0].pointList_x)
+# TODO: maybe problemtic due to createMPL
 """
-
-            # TODO: maybe problemtic due to createMPL
+print(helpers.t2tDistance(unique_macros[0].terms[0], unique_macros[0].terms[1]))
+helpers.moveTermUpdate(unique_macros[0].terms[0], 60)
+helpers.moveTermUpdate(unique_macros[0].terms[1], 0)
+print(helpers.t2tDistance(unique_macros[0].terms[0], unique_macros[0].terms[1]))
+"""
 # --------------------
 #  Build Model
 # --------------------
@@ -116,26 +68,17 @@ for macro in unique_macros:
 	macro_var = mdl.integer_var_list(len(macro.terms), 0, int(macro.perimeter/pinMovement), macro.type)
 	macro_vars.append(macro_var)
 
-# Create Variable - step : fix to pinMovement in constraint
-pinMovement_var = mdl.integer_var(0, pinMovement)
-
 # Create Variable - macro.cpo_center.x/y : fix to macro.center.x/y in constraint
 for macro in macros:
 	macro.cpo_center.x = mdl.integer_var(0, macro.center.x)
 	macro.cpo_center.y = mdl.integer_var(0, macro.center.y)
+
 # Apply possible movement in each macro type
-
-
 for i in range(0, len(unique_macros)):
 	for j in range(0, len(unique_macros[i].terms)):
-		#print(unique_macros[i].terms[j].name)
-		#print(type((macro_vars[i])[j]))
-		#print('--------------------------')
-		cplex_helpers.moveTermUpdate(mdl, unique_macros[i].terms[j], pinMovement_var, (macro_vars[i])[j])
+		cplex_helpers.moveTermUpdate(mdl, unique_macros[i].terms[j], (macro_vars[i])[j])
 
-print(type(unique_macros[0].terms[0].cpo_location.x))
-print('--------------------------')
-		# TODO: maybe problemtic due to pointLists
+# TODO: maybe problemtic due to pointLists
 # TODO: Rotation and Multi-copies
 
 # ----------------
@@ -143,18 +86,21 @@ print('--------------------------')
 # ----------------
 
 # fixed variable constraints
-mdl.add(pinMovement_var == pinMovement) 
 for macro in macros:
 	mdl.add(macro.cpo_center.x == macro.center.x)
 	mdl.add(macro.cpo_center.y == macro.center.y)
 # minPinPitch Constraints
-"""
+mdl.add(cplex_helpers.t2tDistance(mdl, unique_macros[0].terms[0], unique_macros[0].terms[1]) >= minPinPitch)
+
 for macro in unique_macros:
-	for i in [x for x in range(0, len(macro.terms))]:
-		for j in [x for x in range(i, len(macro.terms))]:
-			a = True
-			#mdl.add(cplex_helpers.t2tDistance(mdl, macro.terms[i], macro.terms[j]) >= mdl.constant(minPinPitch))
-"""
+	for i in list(range(0, len(macro.terms))):
+		for j in list(range(i + 1, len(macro.terms))):
+			#print((i,j))
+			mdl.add(cplex_helpers.t2tDistance(mdl, macro.terms[i], macro.terms[j]) >= minPinPitch)
+
+
+
+
 # ----------------
 # Add Objective
 # ----------------
@@ -182,6 +128,10 @@ msol = mdl.solve(TimeLimit=10)
 
 # Print solution
 if msol:
+    parameters = msol.get_parameters()
+    print(type(parameters))
+    for i in range(0, len(unique_macros[0].terms)):
+    	print(msol[(macro_vars[0])[i]])
     #print("Wmn: {}".format(msol.get_objective_values()[0]))
     print("Done")
 else:
