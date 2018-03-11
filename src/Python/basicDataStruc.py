@@ -69,6 +69,7 @@ class Term:
 		# wrapped  fields
 		self.cpo_macro_location = Location()
 		self.cpo_location = Location()
+		self.cpo_new_location = Location() # for calculating Wmax expression
 
 	def update_term(self):
 		# Update macro-reference location

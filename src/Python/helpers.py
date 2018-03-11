@@ -38,12 +38,6 @@ def find_P(pins, macros):
 def find_M(pins, original_pins):
 	return 1 - (len(pins)-len(original_pins))/(len(original_pins))
 
-def updateTermsInNets(nets, macros):
-	for net in nets:
-		for macro in macros:
-			for term in macro.terms:
-				if term.net.name == net.name:
-					net.terms.append(term)
 
 # --------------------------------
 #  Solver Data Processing Helpers
@@ -65,8 +59,19 @@ def processMacroTermLocation(unique_macros):
 			term.location.y -= term.macro.center.y
 	return unique_macros
 
+def findCloestPoint(term, pointList_x, pointList_y):
+	index = 1
+	min_index = 0
+	min_dist = abs(term.macro_location.x - pointList_x[0]) + abs(term.macro_location.y - pointList_y[0])
+	for point_x, point_y in zip(pointList_x, pointList_y):
+		distance = abs(term.macro_location.x - point_x) + abs(term.macro_location.y - point_y)
+		if distance < min_dist:
+			min_dist = distance 
+			min_index = index
+		index = index + 1
+	return min_index
+
 def createMacroPointList(unique_macros, step):
-	#count = 0
 	pointLists_x = [] 
 	pointLists_y = []
 	for macro in unique_macros:
@@ -102,38 +107,34 @@ def createMacroPointList(unique_macros, step):
 				pointList_y.append(-new_half_height)
 			# match origin
 			index = findCloestPoint(term, pointList_x, pointList_y)
-			"""
-			if(term.macro_location.x == new_half_width):
-				term_edge = 'right'
-			elif(term.macro_location.x == -new_half_width):
-				term_edge = 'left'
-			elif(term.macro_location.y == new_half_height):
-				term_edge = 'top'
-			else:
-				term_edge = 'bottom'
-			skew_offset = pointList_x[index] - term.macro_location.x if pointList_x[index] - term.macro_location.x != 0 else pointList_y[index] - term.macro_location.y
-			"""
-			# list start with default location
+
 			pointList_x = pointList_x[index:len(pointList_x)] + pointList_x[0:index]
 			pointList_y = pointList_y[index:len(pointList_y)] + pointList_y[0:index]			
 			term.pointList_x = pointList_x
 			term.pointList_y = pointList_y
-			#count = 1
+			
+def updateTermsInNets(nets, macros):
+	for net in nets:
+		for macro in macros:
+			for term in macro.terms:
+				if term.net.name == net.name:
+					net.terms.append(term)
+
+# ----------------------------------
+# non-Cpo version of Solver Helpers
+# ----------------------------------
+def net_HPWL(net):
+	terms_x = []
+	terms_y = []
+	for term in net.terms:
+		terms_x.append(term.location.x)
+		terms_y.append(term.location.y)
+	x_max = max(terms_x)
+	x_min = min(terms_x)
+	y_max = max(terms_y)
+	y_min = min(terms_y)
+	return x_max - x_min + y_max - y_min
 	
-
-
-def findCloestPoint(term, pointList_x, pointList_y):
-	index = 1
-	min_index = 0
-	min_dist = abs(term.macro_location.x - pointList_x[0]) + abs(term.macro_location.y - pointList_y[0])
-	for point_x, point_y in zip(pointList_x, pointList_y):
-		distance = abs(term.macro_location.x - point_x) + abs(term.macro_location.y - point_y)
-		if distance < min_dist:
-			min_dist = distance 
-			min_index = index
-		index = index + 1
-	return min_index
-#############################################################################################################3
 def moveTermUpdate(term, moveDistance): # default move clockwise
 	# Update Cpo Location
 	term.macro_location.x = term.pointList_x[moveDistance]
@@ -143,6 +144,10 @@ def moveTermUpdate(term, moveDistance): # default move clockwise
 
 def t2tDistance(term1, term2):
 	return abs(term1.macro_location.x - term2.macro_location.x) + abs(term1.macro_location.y - term2.macro_location.y)
+
+
+
+# Reference moveTerm
 """
 def moveTerm(term, moveDistance): # default move clockwise
 	def updateTop(term, width, height, moveDistance):

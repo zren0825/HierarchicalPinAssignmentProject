@@ -9,7 +9,7 @@ import basicDataStruc as ds
 def parseMacroBasciInfo(macro_basic_info_line):
 	macro_info_chunks = macro_basic_info_line.split()
 	macro = ds.Macro(name = macro_info_chunks[0])
-	macro.type = macro_info_chunks[1]
+	macro.type = macro_info_chunks[1][0:len(macro_info_chunks[1]) - len(macro_info_chunks[1])]
 	UL = ds.Location(int(macro_info_chunks[4]), int(macro_info_chunks[3]))
 	LR = ds.Location(int(macro_info_chunks[2]), int(macro_info_chunks[5]))
 	macro.box = ds.Box(UL,LR)
