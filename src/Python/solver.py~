@@ -89,13 +89,12 @@ for macro in unique_macros:
 			mdl.add(cpo_pinPitch >= minPinPitch)
 
 # maxPinPitch Constraints
-
-cpo_perturbation_list = []
-for macro in unique_macros:
-	for term in macro.terms:
-		cpo_perturbation = cplex_helpers.termPerturbation(mdl, term)
-		cpo_perturbation_list.append(cpo_perturbation)
-		if maxPerturbation != -1:
+if maxPerturbation != -1:
+	cpo_perturbation_list = []
+	for macro in unique_macros:
+		for term in macro.terms:
+			cpo_perturbation = cplex_helpers.termPerturbation(mdl, term)
+			cpo_perturbation_list.append(cpo_perturbation)
 			mdl.add(cpo_perturbation <= maxPerturbation) 
 
 
