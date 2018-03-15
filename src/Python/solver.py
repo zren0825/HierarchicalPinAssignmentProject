@@ -1,7 +1,7 @@
 # This file contains implemention of CPLEX solver
 # in the pin assignment task which are expected to be used
 # as the main function in the CPLEX solver
-# Last modified: 03/07/2018 3PM 
+
 
 from docplex.cp.model import CpoModel
 import basicDataStruc as ds
@@ -19,11 +19,8 @@ pinMovement	0.28
 minPinPitch	1.4
 maxPerturbation	-1
 """
-macroNetFile = 'cplex_for_python.txt'
-#constraintFile = ''
-pinMovement = int(0.28 * 2000)
-minPinPitch = int(1.4 * 2000)
-maxPerturbation = -1
+file_path = '/w/class.2/ee/ee201a/ee201ota/submission/project/grade_16/'
+designInfoFile = file_path + 'design_info.txt'
 
 # --------------------
 #  Preparing Data
@@ -32,80 +29,97 @@ maxPerturbation = -1
 # Read input files
 macros = []
 nets = [] 
-[macros, nets] = utils.readMacroNetFile(macroNetFile)
-#constraint = utils.readConstraintFile(constraintFile)
-# Update all terms
+macros, nets, pinMovement, minPinPitch, maxPerturbation = utils.readDesignInfoFile(designInfoFile)
+
+pinMovement = int(float(pinMovement) * 2000)
+minPinPitch = int(float(minPinPitch) * 2000)
+if int(maxPerturbation) != -1:
+	maxPerturbation = int(float(maxPerturbation) * 2000)
+'''
+# Update macro-reference location for all terms
 for macro in macros:
 		for term in macro.terms:
 			term.update_term()
-
+'''			
 # Group macros by type
 [unique_macros, macro_types] = helpers.findUniqueMacros(macros)
 
-# Process macro term location to macro-reference-location
-unique_macros = helpers.processMacroTermLocation(unique_macros)
-
 # Create macro point lists
-helpers.createMacroPointList(unique_macros, pinMovement)
-
-#print(unique_macros[0].terms[0].pointList_x)
-# TODO: maybe problemtic due to createMPL
-
+for macro in macros:
+	#helpers.createMacroPositionList(macro, pinMovement, minPinPitch)
+	helpers.createMacroPositionList(macro, minPinPitch, minPinPitch)
+'''
+print(len(macros[0].positionList_x))
+for i in range(0, len(macros[0].positionList_x)):
+	print(str(macros[0].positionList_x[i]) + '\t' +  str(macros[0].positionList_y[i]))
+'''
 # --------------------
 #  Build Model
 # --------------------
 
 # Create Model
 mdl = CpoModel()
-# Create Variables - moveDistance
-macro_vars = []
-for macro in unique_macros:
-	macro_var = mdl.integer_var_list(len(macro.terms), 0, int(macro.perimeter/pinMovement), macro.type)
-	macro_vars.append(macro_var)
 
+# Create Variables - move steps
+new_index_map = dict()
+for macro in unique_macros:
+	for term in macro.terms:
+		new_index = mdl.integer_var(0, len(macro.positionList_x), term.name)
+		new_index_map[term.name] = new_index
+'''
 # Create Variable - macro.cpo_center.x/y : fix to macro.center.x/y in constraint
 for macro in macros:
 	macro.cpo_center.x = mdl.integer_var(domain = (macro.center.x, macro.center.x))
 	macro.cpo_center.y = mdl.integer_var(domain = (macro.center.y, macro.center.y))
-
-# Apply possible movement in each macro type
-for i in range(0, len(unique_macros)):
-	for j in range(0, len(unique_macros[i].terms)):
-		cplex_helpers.moveTermUpdate(mdl, unique_macros[i].terms[j], (macro_vars[i])[j])
-
-# TODO: maybe problemtic due to pointLists
-# TODO: Rotation and Multi-copies
+'''
+# Apply possible movements in each term in each macro and update new cpo_location after movements 
+for macro in macros:
+	for term in macro.terms:
+		cplex_helpers.moveTermUpdate(mdl, macro, term, new_index_map)
+		
+# TODO: Rotation 
+# TODO: Multi-copies
 
 # ----------------
 # Add Constraints
 # ----------------
 
 # minPinPitch Constraints
-for macro in unique_macros:
-	for i in list(range(0, len(macro.terms))):
-		for j in list(range(i + 1, len(macro.terms))):
-			#print((i,j))
-			cpo_pinPitch = cplex_helpers.t2tDistance(mdl, macro.terms[i], macro.terms[j])
-			mdl.add(cpo_pinPitch >= minPinPitch)
+'''
+all_pins_list = []
+for macro in macros:
+	for term in macro.terms:
+		all_pins_list.append(term)
 
-# maxPinPitch Constraints
+for i in list(range(0, len(all_pins_list))):
+	for j in list(range(i + 1, len(all_pins_list))):
+		cpo_pinPitch = cplex_helpers.t2tDistance(mdl, all_pins_list[i], all_pins_list[j])
+		mdl.add(cpo_pinPitch >= minPinPitch)
+'''
+new_index_list = []
+for key, value in new_index_map.items():
+	new_index_list.append(value)
+for i in range(0, len(new_index_list)):
+	for j in range(i+1, len(new_index_list)):
+		mdl.add(new_index_list[i] != new_index_list[j])
+		#mdl.add(new_index_list[i] - new_index_list[j] > minPinPitch/pinMovement)
 
+		
+# maxPinPitch Constraints - save cpo_perturbation_list for objectives modeling
 cpo_perturbation_list = []
-for macro in unique_macros:
+for macro in macros:
 	for term in macro.terms:
 		cpo_perturbation = cplex_helpers.termPerturbation(mdl, term)
 		cpo_perturbation_list.append(cpo_perturbation)
 		if maxPerturbation != -1:
-			mdl.add(cpo_perturbation <= maxPerturbation) 
-
-
+			mdl.add(cpo_perturbation < maxPerturbation) 
 
 # ----------------
 # Add Objective
 # ----------------
-# Update terms info in all nets
+# Update terms info in all nets - because no initialization
 helpers.updateTermsInNets(nets, macros)
-# Process/
+# Collect original and new HPWL of each net
 net_wl_list = []
 original_net_wl_list = []
 for net in nets:
@@ -114,34 +128,30 @@ for net in nets:
 	original_net_wl = helpers.net_HPWL(net)
 	original_net_wl_list.append(original_net_wl)
 
-# TODO: get absolute Wmn expression  Wmn = max(0, 1 - .....)
-
 # Max WL expression:  max net wirelength/max net wirelength without pin assignment
-Wmax = mdl.max(net_wl_list)/mdl.integer_var(domain = (int(max(original_net_wl_list)),int(max(original_net_wl_list))))
+Wmax = mdl.max(net_wl_list)/int(max(original_net_wl_list))
 
 # Mean WL expression: wirelength mean/wirelength mean without pin assignment
-Wmn_new = mdl.sum(net_wl_list)/mdl.integer_var(domain = (len(net_wl_list),len(net_wl_list)))
+Wmn_new = mdl.sum(net_wl_list)/len(net_wl_list)
 Wmn_ori = sum(original_net_wl_list)/len(original_net_wl_list)
-Wmn = Wmn_new/mdl.integer_var(domain = (int(Wmn_ori),int(Wmn_ori)))
+Wmn = Wmn_new/int(Wmn_ori)
 # perturbation expression: mean pin perturbation /(mean macro perimeter /2 )
 perimeter_sum = 0
 for macro in macros:
 	perimeter_sum += macro.perimeter
 perimeter_mean = perimeter_sum/len(macros)
-Pmn = mdl.sum(cpo_perturbation_list)/mdl.integer_var(domain = (int(perimeter_mean/2),int(perimeter_mean/2)))
+pin_perturbation_mean = mdl.sum(cpo_perturbation_list)/len(cpo_perturbation_list)
+Pmn = pin_perturbation_mean/int(perimeter_mean/2)
 
 # Total Score
-zero = mdl.integer_var(domain = (0,0))
-one = mdl.integer_var(domain = (1,1))
-two = mdl.integer_var(domain = (2,2))
-Wmax = mdl.max([zero, one - Wmax])
-Wmn = mdl.max([zero, one - Wmn])
-Pmn = mdl.max([zero, one - Pmn])
-m = one # subject to change After add pinCopy feature
-e = zero # Do not consider run-time score at runtime, set constraint manually
-Score = one*Wmax + two*Wmn + two*Pmn + two*m 
+Wmax = mdl.max([0, 1 - Wmax])
+Wmn = mdl.max([0, 1 - Wmn])
+Pmn = mdl.max([0, 1 - Pmn])
+m = 1 # subject to change After add pinCopy feature
+e = 0 # Do not consider run-time score at runtime, set constraint manually
+Score = 1*Wmax + 2*Wmn + 2*Pmn + 2*m 
 mdl.add(mdl.maximize(Score))
-
+#mdl.add(mdl.minimize(Pmn))
 
 # --------------------
 #  Solve and display
@@ -149,16 +159,17 @@ mdl.add(mdl.maximize(Score))
 
 # Solve Model
 print("\nSolving model....")
-msol = mdl.solve(TimeLimit=10)
+msol = mdl.solve(TimeLimit=1)
 
 # Print solution
-if msol:
-	# utils.dumptOutputFile()
-    parameters = msol.get_parameters()
-    print(type(parameters))
-    for i in range(0, len(unique_macros[0].terms)):
-    	print(msol[(macro_vars[0])[i]])
-    #print("Wmn: {}".format(msol.get_objective_values()[0]))
-    print("Done")
+if msol:		
+    # dump pin assignment decision to file to be read from c++ main
+    utils.dumpOutputFile(msol, macros)
+    # dump file to indicate python done
+    utils.dumpFinishIndicatorFile()
+    print("Python Script Done")
 else:
     print("No solution found.")
+
+ 
+

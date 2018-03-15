@@ -1,7 +1,7 @@
 # This file contains cplex helper functions definitions
 # in the pin assignment task which are expected to be used
 # as cplex helper functions in the CPLEX solver
-# Last modified: 03/07/2018 3PM 
+
 
 import helpers
 
@@ -10,30 +10,29 @@ import helpers
 # --------------------------------
 
 def t2tDistance(mdl, term1, term2):
-	return mdl.abs(term1.cpo_macro_location.x - term2.cpo_macro_location.x) + mdl.abs(term1.cpo_macro_location.y - term2.cpo_macro_location.y)
+	return mdl.abs(term1.cpo_location.x - term2.cpo_location.x) + mdl.abs(term1.cpo_location.y - term2.cpo_location.y)
 
 def termPerturbation(mdl, term):
-	return mdl.abs(term.cpo_new_location.x - term.cpo_location.x) + mdl.abs(term.cpo_new_location.y - term.cpo_location.y) 
+
+	return mdl.abs(term.cpo_location.x - term.location.x) + mdl.abs(term.cpo_location.y - term.location.y) 
 
 # --------------------------------
 #  Solver Optimizer Helpers
 # --------------------------------
 
-def moveTermUpdate(mdl, term, moveDistance): # default move clockwise
-	# Update Cpo Location
-	term.cpo_macro_location.x = mdl.element(term.pointList_x, moveDistance)
-	term.cpo_macro_location.y = mdl.element(term.pointList_y, moveDistance)
-	#term.cpo_location.x = term.cpo_macro_location.x + term.macro.cpo_center.x
-	#term.cpo_location.y = term.cpo_macro_location.y + term.macro.cpo_center.y
-	term.cpo_new_location.x = term.cpo_macro_location.x + term.macro.cpo_center.x
-	term.cpo_new_location.y = term.cpo_macro_location.y + term.macro.cpo_center.y
+def moveTermUpdate(mdl, macro, term, new_index_map): # default move clockwise
+
+ 	term.cpo_location.x = mdl.element(macro.positionList_x, new_index_map[term.name])
+	term.cpo_location.y = mdl.element(macro.positionList_x, new_index_map[term.name])
+	#term.cpo_location.x = macro.positionList_x[ new_index_map[term.name]]
+	#term.cpo_location.y = macro.positionList_x[ new_index_map[term.name]]
 
 def net_HPWL(mdl, net):
 	terms_x = []
 	terms_y = []
 	for term in net.terms:
-		terms_x.append(term.cpo_new_location.x)
-		terms_y.append(term.cpo_new_location.y)
+		terms_x.append(term.cpo_location.x)
+		terms_y.append(term.cpo_location.y)
 	x_max = mdl.max(terms_x)
 	x_min = mdl.min(terms_x)
 	y_max = mdl.max(terms_y)

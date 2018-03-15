@@ -1,7 +1,7 @@
 # This file contains definition of basic class/structure
 # in the pin assignment task which are expected to be used
 # as basic data structures in the CPLEX solver
-# Last modified: 03/07/2018 2PM 
+
 class Block:
 	def __init__(self, name=''):
 		self.name   = name
@@ -13,19 +13,22 @@ class Macro:
 		self.name  = name
 		self.type  = ''
 		self.terms = []
-		self.pins  = []
 		self.maxPinCopy = 0
 		self.box   = Box()
+		self.origin = Location()
 		self.perimeter = 0 
 		self.center = Location()
 		self.cpo_center = Location()
 		self.rotated   = False
+
+		self.positionList_x = []
+		self.positionList_y = []
 	def update_macro(self):
 		# Updata Perimeter
-		self.perimeter = 2 * (self.box.lowerRight.x - self.box.upperLeft.x + self.box.upperLeft.y - self.box.lowerRight.y)
+		self.perimeter = 2 * (self.box.upperRight.x - self.box.lowerLeft.x + self.box.upperRight.y - self.box.lowerLeft.y)
 		# Update Center
-		self.center.x = int((self.box.upperLeft.x + self.box.lowerRight.x)/2)
-		self.center.y = int((self.box.upperLeft.y + self.box.lowerRight.y)/2)
+		self.center.x = int((self.box.upperRight.x + self.box.lowerLeft.x)/2)
+		self.center.y = int((self.box.upperRight.y + self.box.lowerLeft.y)/2)
 
 	def rotate(self):
 		self.rotated = True
@@ -48,48 +51,28 @@ class Location:
 		self.y = y
 
 class Box:
-	def __init__(self, upperLeft = Location(), lowerRight = Location()):
-		self.upperLeft  = upperLeft
-		#self.upperRight = Location()
-		#self.lowerLeft  = Location()
-		self.lowerRight = lowerRight
+	def __init__(self, upperRight = Location(), lowerLeft = Location()):
+		self.upperRight  = upperRight
+
+		self.lowerLeft = lowerLeft
 
 class Term:
 	def __init__(self, name = '', _type = '', netName = '', location = Location()):
 		self.name = name
 		self.type = _type
 		self.location = location
+		self.legal_location = Location()
 		self.macro_location = Location()
 		self.macro = Macro()
 		self.net = Net(netName)
 		self.numCopies = 0
 		self.edge = ''
-		self.pointList_x = []
-		self.pointList_y = []
+
 		# wrapped  fields
 		self.cpo_macro_location = Location()
 		self.cpo_location = Location()
 		self.cpo_new_location = Location() # for calculating Wmax expression
 
-	def update_term(self):
-		# Update macro-reference location
-		self.macro_location = Location(self.location.x - self.macro.center.x,self.location.y - self.macro.center.y)
-		# Update edge
-		"""
-		macro_width  = abs(self.macro.box.upperLeft.x - self.macro.box.lowerRight.x)
-		macro_height = abs(self.macro.box.upperLeft.y - self.macro.box.lowerRight.y)
-		if(self.macro_location.x == macro_width/2):
-			self.edge = 'right'
-		elif(self.macro_location.x == -macro_width/2):
-			self.edge = 'left'
-		elif (self.macro_location.y == macro_height/2):
-			self.edge = 'top'
-		else:
-			self.edge = 'bottom'
-		"""
-		# used in helpers.moveTerm()
-	def update_location(self):
-		self.location = Location(self.macro.center.x + self.macro_location.x,self.macro.center.y + self.macro_location.y)
 
 class PerformanceMetrics:
 	def __init__(self, name = '', Wmax = 0, Wmn = 0, p = 0, m = 0):
